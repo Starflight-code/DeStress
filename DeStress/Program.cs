@@ -65,23 +65,6 @@ string[] box_breathing_content = {
         "0",
         "N/A"
     };
-/* REF CODE
- 
- while (i <= loops)
-    {
-        waitgui(4, "Inhale", "Hold", "Inhale through your nose.");
-
-        waitgui(7, "Hold", "Exhale");
-
-        if (loops == i)
-        {
-
-            waitgui(8, "Exhale", "None");
-        }
-        else
-        {
-            waitgui(8, "Exhale", "Inhale", "Exhale through your mouth completely.");
-*/
 void debug_write(string text)
 {
     if (debug_mode)
@@ -211,20 +194,6 @@ int obj_parse(addon x)
             ix++;
 
         }
-        // Ref. code
-        //waitgui(4, "Hold", "Exhale");
-        //waitgui(4, "Inhale", "Hold");
-        //waitgui(4, "Hold", "Exhale");
-
-        /*if (loops == i)
-        {
-
-            waitgui(4, "Exhale", "None");
-        }
-        else
-        {
-            waitgui(4, "Exhale", "Inhale");
-        }*/
         i++;
     }
     return (int)time_int;
@@ -386,75 +355,7 @@ void waitgui(double seconds, string state, string nextstate, string additionalin
     }
 
 }
-int fourseveneight()
-{
-    Console.Clear();
-    Console.Write("4-7-8 Breathing\n\n It's best to have your back straight while \n performing this breathing exersise.\n\n1: Place the tip of your tongue against\n   the ridge of tissue behind your upper\n   front teeth. Keep this placement\n   throughout the exercise.\n2: Exhale through your mouth completely\n3: Close your mouth and inhale through\n   your nose. [4 seconds]\n4: Hold your breath for a count of seven.\n5: Exhale through your mouth completely.\n   [Repeat as appropriate]\n");
-    Console.Write("\nHow long would you like to perform this breathing exersise in minutes? ");
-    string? time = Console.ReadLine();
-    if (time == null)
-    {
-        throw new Exception("Time can not be null. Error 3!");
-    }
-    double timedbl = Int32.Parse(time);
-    int loops = (int)Math.Round((timedbl * 60) / 19);
-    smallwait($"Your session will begin in 5 seconds.", 5);
-    int i = 1;
-    waitgui(10, "Prepare", "Exhale", "  Place the tip of your tongue against\n   the ridge of tissue behind your upper\n   front teeth. Keep this placement\n   throughout the exercise.", 40);
-    waitgui(5, "Exhale", "Inhale", "Exhale completely through your mouth.");
-    while (i <= loops)
-    {
-        waitgui(4, "Inhale", "Hold", "Inhale through your nose.");
 
-        waitgui(7, "Hold", "Exhale");
-
-        if (loops == i)
-        {
-
-            waitgui(8, "Exhale", "None");
-        }
-        else
-        {
-            waitgui(8, "Exhale", "Inhale", "Exhale through your mouth completely.");
-        }
-        i++;
-    }
-    return (int)timedbl;
-}
-int box()
-{
-    Console.Clear();
-    Console.Write("Box Breathing\n\n 1: Exhale [4 seconds]\n 2: Hold [4 seconds]\n 3: Inhale [4 seconds]\n 4: Hold [4 seconds]\n [Repeat as appropriate]\n");
-    Console.Write("\nHow long would you like to perform this breathing exersise in minutes? ");
-    string? time = Console.ReadLine();
-    if (time == null)
-    {
-        throw new Exception("Time can not be null. Error 3!");
-    }
-    double timedbl = Int32.Parse(time);
-    int loops = (int)Math.Round((timedbl * 60) / 16);
-    smallwait($"Your session will begin in 5 seconds.", 5);
-    int i = 1;
-    waitgui(4, "Exhale", "Hold");
-    while (i <= loops)
-    {
-        waitgui(4, "Hold", "Exhale");
-        waitgui(4, "Inhale", "Hold");
-        waitgui(4, "Hold", "Exhale");
-
-        if (loops == i)
-        {
-
-            waitgui(4, "Exhale", "None");
-        }
-        else
-        {
-            waitgui(4, "Exhale", "Inhale");
-        }
-        i++;
-    }
-    return (int)timedbl;
-}
     int progressivemusclerelaxation()
     {
         Console.Clear();
@@ -529,28 +430,6 @@ if (input == null || input == "0") {
 }
 int inputnum = (int)Int32.Parse(input);
 breathingtime += obj_parse(Addon[inputnum - 1]);
-    /*if (inputnum < 3) {
-    switch (inputnum)
-    {
-        case 1:
-            breathingtime += fourseveneight();
-            break;
-        case 2:
-            breathingtime += box();
-            break;
-        case 3:
-            break;
-        case 0:
-                stop = true;
-                Environment.Exit(1);
-                break;
-        case 99:
-            throw new Exception("Input can not be null. Error 5!");
-        default:
-            throw new Exception("Input is not valid. Error 6!");
-        } } else {
-            breathingtime += obj_parse(Addon[inputnum - 3]);
-        }*/
 }
 while (stop == false)
 {
