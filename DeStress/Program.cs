@@ -18,21 +18,20 @@
  */
 //Imports
 using DeStress;
-using System.Xml;
-using System.Xml.Schema;
 
 //Declare global variables
 bool stop = false;
 string[] script_paths = { };
 int breathingtime = 0;
-bool debug_mode = true;
+bool debug_mode = false;
 string add_on_directory_path = ".\\add_ons";
-string example_file_path = $"{add_on_directory_path}\\example.txt";
+string four_seven_eight_path = $"{add_on_directory_path}\\four_seven_eight_breathing.txt";
+string box_breathing_path = $"{add_on_directory_path}\\box_breathing.txt";
 int file_IO_Wait = 500;
 List<addon> Addon = new List<addon>();
-string[] example_file_content = {
-        "Example Sequence",
-        "Example Sequence\\n\\n It's best to have your back straight while \\n performing this breathing exersise.\\n\\n1: Place the tip of your tongue against\\n   the ridge of tissue behind your upper\\n   front teeth. Keep this placement\\n   throughout the exercise.\\n2: Exhale through your mouth completely\\n3: Close your mouth and inhale through\\n   your nose. [4 seconds]\\n4: Hold your breath for a count of seven.\\n5: Exhale through your mouth completely.\\n   [Repeat as appropriate]\\n",
+string[] four_seven_eight_breathing_content = {
+        "4-7-8 Breathing",
+        "4-7-8 Breathing\\n\\n It's best to have your back straight while \\n performing this breathing exersise.\\n\\n1: Place the tip of your tongue against\\n   the ridge of tissue behind your upper\\n   front teeth. Keep this placement\\n   throughout the exercise.\\n2: Exhale through your mouth completely\\n3: Close your mouth and inhale through\\n   your nose. [4 seconds]\\n4: Hold your breath for a count of seven.\\n5: Exhale through your mouth completely.\\n   [Repeat as appropriate]\\n",
         "Inhale",
         "4",
         "0",
@@ -40,10 +39,31 @@ string[] example_file_content = {
         "Hold",
         "7",
         "0",
+        "N/A",
         "Exhale",
         "8",
         "0",
         "Exhale through your mouth completely."
+    };
+string[] box_breathing_content = {
+        "Box Breathing",
+        "Box Breathing\\n\\n 1: Exhale [4 seconds]\\n 2: Hold [4 seconds]\\n 3: Inhale [4 seconds]\\n 4: Hold [4 seconds]\\n [Repeat as appropriate]\\n",
+        "Inhale",
+        "4",
+        "0",
+        "N/A",
+        "Hold",
+        "4",
+        "0",
+        "N/A",
+        "Exhale",
+        "4",
+        "0",
+        "N/A",
+        "Hold",
+        "4",
+        "0",
+        "N/A"
     };
 /* REF CODE
  
@@ -76,18 +96,30 @@ void init()
 
         debug_write($"Directory {add_on_directory_path} does not exist. Creating...");
         Directory.CreateDirectory(add_on_directory_path);
-        var example_file = File.Create(example_file_path);
-        example_file.Dispose();
+        var four_seven_eight_file = File.Create(four_seven_eight_path);
+        four_seven_eight_file.Dispose();
         debug_write("Starting file write operation");
 
-        var example_file_write = File.WriteAllLinesAsync(example_file_path, example_file_content);
-        if (example_file_write.Wait(file_IO_Wait))
+        var four_seven_eight_write = File.WriteAllLinesAsync(four_seven_eight_path, four_seven_eight_breathing_content);
+        var box_breathing_write = File.WriteAllLinesAsync(box_breathing_path, box_breathing_content);
+        if (four_seven_eight_write.Wait(file_IO_Wait))
         {
-            example_file_write.Dispose();
+            four_seven_eight_write.Dispose();
             debug_write($"Success, completed within {file_IO_Wait} ms.");
         }
         else
         {
+            four_seven_eight_write.Dispose();
+            debug_write($"Failed, disposing file stream after {file_IO_Wait} ms. \nDEBUG: Consider longer wait time and/or make sure other application are not using the file.");
+        }
+        if (box_breathing_write.Wait(file_IO_Wait))
+        {
+            box_breathing_write.Dispose();
+            debug_write($"Success, completed within {file_IO_Wait} ms.");
+        }
+        else
+        {
+            box_breathing_write.Dispose();
             debug_write($"Failed, disposing file stream after {file_IO_Wait} ms. \nDEBUG: Consider longer wait time and/or make sure other application are not using the file.");
         }
     }
@@ -128,9 +160,7 @@ if (script_paths.Length > 0)
                         break;
                     case 5:
                         Addon[i].add_additional_info(x);
-                        break;
-                    case 6:
-                        ix = 1; // Will resume on line 2, since it is iterated at the end
+                        ix = 1;
                         break;
                 }
                 ix++;
@@ -143,7 +173,10 @@ if (script_paths.Length > 0)
 int obj_parse(addon x)
 {
     Console.Clear();
-    Console.Write(x.summary);
+    foreach (string summarystr in x.summary.Split("\\n"))
+    {
+        Console.Write($"\n{summarystr}");
+    }
     Console.Write("\nHow long would you like to perform this breathing exersise in minutes? ");
     string? time = Console.ReadLine();
     if (time == null)
@@ -154,26 +187,29 @@ int obj_parse(addon x)
     int total_sequence_time = 0;
     foreach (int times in x.times)
     {
+        debug_write($"\nIn Time: {times}");
         total_sequence_time += times;
+        debug_write($"\nTST: {total_sequence_time}");
     }
     int loops = (int)Math.Round((time_int * 60) / total_sequence_time);
+    debug_write($"\nLoops: {loops}");
+    debug_write("\n\nPRESS ENTER TO CONTINUE");
+    if (debug_mode) { Console.ReadLine(); }
     smallwait($"Your session will begin in 5 seconds.", 5);
-    int i = 1;
-    waitgui(4, "Exhale", "Hold");
+    int i = 0;
     while (i <= loops)
     {
         int ix = 0;
         foreach (string state in x.states)
         {
-            if (x.states.Length == (ix + 1)) {
-                if (loops == i) {
-                    waitgui(x.times[ix], state, "None");
-                }
-            } else {
-                waitgui(x.times[ix], state, x.states[0]);
-            }
-            waitgui(x.times[ix], state, x.states[ix + 1]);
+        try {
+            waitgui(x.times[ix], state, x.states[ix + 1]);} 
+            catch(System.ArgumentOutOfRangeException) {
+                if (!(i == loops)) {
+                    waitgui(x.times[ix], state, x.states[0]); }
+            else {waitgui(x.times[ix], state, "None"); } }
             ix++;
+
         }
         // Ref. code
         //waitgui(4, "Hold", "Exhale");
@@ -457,9 +493,10 @@ int box()
     //https://www.healthline.com/health/progressive-muscle-relaxation#how-to-do-it, ended at step 4, continue with step 5
     return 0;
 }
+init();
+bool show_add_ons = parse_add_ons();
 void mainfunc() {
-    init();
-    bool show_add_ons = parse_add_ons();
+    
     Console.Clear();
     Console.Write(" _    _      _                            _\n| |  | |    | |                          | |\n| |  | | ___| | ___ ___  _ __ ___   ___  | |\n| |/\\| |/ _ \\ |/ __/ _ \\| '_ ` _ \\ / _ \\ | |\n\\  /\\  /  __/ | (_| (_) | | | | | |  __/ |_|\n \\/  \\/ \\___|_|\\___\\___/|_| |_| |_|\\___| (_)");
     if (breathingtime != 0) {
@@ -472,57 +509,49 @@ void mainfunc() {
     } else if (time < 18) { Console.Write("\n\nGood Afternoon, ");
     } else { Console.Write("\n\nGood Evening, "); }
 
-    Console.Write("please select the relaxation exersise you would like to use today.\n 1: 4-7-8 Breathing\n 2: Box Breathing");
+    Console.Write("please select the relaxation exersise you would like to use today."/*\n 1: 4-7-8 Breathing\n 2: Box Breathing*/);
     if (true/*show_add_ons*/)
     {
-        int i = 3;
-        debug_write("\nShowing Addons");
-        foreach (string xx in script_paths)
-        {
-            debug_write("Script Paths has a value");
-            debug_write($"\n{xx} ");
-        }
+        int i = 1;
         foreach (addon x in Addon)
         {
             Console.Write($"\n {i}: {x.name}");
+            debug_write($"\n{x.times.Count()}, {x.states.Count()}");
             i++;
             if (i > 9) { break; }
         }
     }
-    foreach (string file_debug in Directory.GetFiles(".\\add_ons"))
-    {
-        debug_write(file_debug);
-    }
-    foreach (string file in Directory.GetFiles(add_on_directory_path))
-    {
-        debug_write("\n" + file + " found in scripts");
-    }
     Console.Write("\n 0: Exit\n\n #> ");
 string? input = Console.ReadLine();
-if (input == null) { input = "99"; }
+if (input == null || input == "0") {
+    stop = true;
+    Environment.Exit(1);
+}
 int inputnum = (int)Int32.Parse(input);
-if (inputnum < 4) {
-switch (inputnum)
-{
-    case 1:
-        breathingtime += fourseveneight();
-        break;
-    case 2:
-        breathingtime += box();
-        break;
-    case 3:
-        break;
-    case 0:
-            stop = true;
-            Environment.Exit(1);
+breathingtime += obj_parse(Addon[inputnum - 1]);
+    /*if (inputnum < 3) {
+    switch (inputnum)
+    {
+        case 1:
+            breathingtime += fourseveneight();
             break;
-    case 99:
-        throw new Exception("Input can not be null. Error 5!");
-    default:
-        throw new Exception("Input is not valid. Error 6!");
-    } } else {
-        breathingtime += obj_parse(Addon[inputnum - 3]);
-    } }
+        case 2:
+            breathingtime += box();
+            break;
+        case 3:
+            break;
+        case 0:
+                stop = true;
+                Environment.Exit(1);
+                break;
+        case 99:
+            throw new Exception("Input can not be null. Error 5!");
+        default:
+            throw new Exception("Input is not valid. Error 6!");
+        } } else {
+            breathingtime += obj_parse(Addon[inputnum - 3]);
+        }*/
+}
 while (stop == false)
 {
     mainfunc();
